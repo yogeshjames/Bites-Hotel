@@ -1,101 +1,296 @@
-import Image from "next/image";
 
-export default function Home() {
+
+"use client";
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import styled from 'styled-components';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const Form = () => {
+  const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hotel/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // This ensures that cookies are sent and received
+        body: JSON.stringify(data),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        localStorage.setItem('hotelId', result.hotelId);
+        
+        toast.success(result.message, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          theme: "light",
+        });
+console.log(result);
+         router.push(`/dashboard/${result.hotelId}`);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Login Failed!", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "light",
+        });
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "light",
+      });
+    }
+  };
+
+  const handleSignUpClick = () => router.push('/register');
+
+  if (!isMounted) return null;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <StyledWrapper>
+      <form className="form" onSubmit={handleSubmit}>
+        <h1 className='head'>Register Your Hotel with us 🌟</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <div className="flex-column">
+          <label>Number</label>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <div className="inputForm">
+          <PhoneIcon />
+          <input
+            type="tel"
+            className="input"
+            name="phone"
+            placeholder="Enter Your Number"
+            pattern="[0-9]{10}"
+            required
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+        </div>
+
+        <div className="flex-column">
+          <label>Password</label>
+        </div>
+        <div className="inputForm">
+          <LockIcon />
+          <input
+            type="password"
+            className="input"
+            name="password"
+            placeholder="Enter your Password"
+            required
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+
+        <div className="flex-row">
+          <span className="span">Forgot password?</span>
+        </div>
+
+        <button className="button-submit">Sign In</button>
+        <p className="p">
+          Don't have an account?{' '}
+          <span className="span" onClick={handleSignUpClick}>Sign Up</span>
+        </p>
+      </form>
+    </StyledWrapper>
   );
-}
+};
+
+// Styled Components
+const PhoneIcon = styled.svg.attrs({
+  height: 20,
+  width: 20,
+  viewBox: "0 0 32 32",
+  xmlns: "http://www.w3.org/2000/svg",
+})`
+  flex-shrink: 0;
+`;
+
+const LockIcon = styled.svg.attrs({
+  height: 20,
+  width: 20,
+  viewBox: "-64 0 512 512",
+  xmlns: "http://www.w3.org/2000/svg",
+})`
+  flex-shrink: 0;
+`;
+
+const StyledWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 10px;
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #ffffff;
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+ .head {
+    text-align: center;
+    font-size: 2.5vw; /* Adjusts for mobile */
+    padding-bottom: 5px;
+    font-weight: 700;
+    color: black;
+  }
+
+  ::placeholder {
+    font-family: inherit;
+  }
+
+  .flex-column > label {
+    color: #151717;
+    font-weight: 600;
+  }
+
+  .inputForm {
+    border: 1.5px solid #ecedec;
+    border-radius: 10px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    transition: 0.2s ease-in-out;
+    width: 100%;
+  }
+
+  .input {
+    margin-left: 10px;
+    border-radius: 10px;
+    border: none;
+    width: 100%;
+    height: 100%;
+    color: black;
+    font-size: 1rem;
+    padding: 0 10px;
+  }
+
+  .input:focus {
+    outline: none;
+  }
+
+  .inputForm:focus-within {
+    border: 1.5px solid #2d79f3;
+  }
+
+  .flex-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .flex-row > div > label {
+    font-size: 0.9rem;
+    color: black;
+    font-weight: 400;
+  }
+
+  .span {
+    font-size: 0.9rem;
+    margin-left: 5px;
+    color: #2d79f3;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .button-submit {
+    margin: 20px 0 10px 0;
+    background-color: #151717;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 10px;
+    height: 50px;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .button-submit:hover {
+    background-color: #252727;
+  }
+
+  .p {
+    text-align: center;
+    color: black;
+    font-size: 0.9rem;
+    margin: 5px 0;
+  }
+
+  .btn {
+    margin-top: 10px;
+    width: 100%;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    gap: 10px;
+    border: 1px solid #ededef;
+    background-color: white;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+  }
+
+  .btn:hover {
+    border: 1px solid #2d79f3;
+  }
+
+  /* MOBILE RESPONSIVENESS */
+  @media (max-width: 480px) {
+    .form {
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 350px;
+    }
+
+    .head {
+      font-size: 6vw;
+    }
+
+    .button-submit {
+      height: 45px;
+      font-size: 0.9rem;
+    }
+
+    .input {
+      font-size: 0.9rem;
+    }
+
+    .span, .p, .flex-row > div > label {
+      font-size: 0.8rem;
+    }
+  }
+`;
+
+
+export default Form;
