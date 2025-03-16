@@ -18,18 +18,18 @@ export default function ProtectedRoute({ children }) {
     async function checkAuth() {
       try {
         // For example, check authentication by calling a protected API
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/check`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hotel/auth/`, {
           credentials: "include",
         });
         if (res.ok) {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
-          router.push("/login");
+          router.push("/");
         }
       } catch (error) {
         setIsAuthenticated(false);
-        router.push("/login");
+        router.push("/");
       } finally {
         setIsLoading(false);
       }

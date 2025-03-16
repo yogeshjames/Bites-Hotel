@@ -6,6 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle'
 import { RateReview, Comment, } from "@mui/icons-material";
+import ProtectedRoute from "../../Protected";
 import { io } from "socket.io-client";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { 
@@ -310,6 +311,7 @@ export default function EnterpriseHotelDashboard() {
     if (subTabValue === 2) return order.status === "Cancelled";
   });
   return (
+    <ProtectedRoute>
     <EnterpriseDashboard>
       <ToastContainer position="top-right" autoClose={3000} style={{ fontSize: '14px' }} />
 
@@ -656,6 +658,7 @@ export default function EnterpriseHotelDashboard() {
         </Box>
       )}
     </EnterpriseDashboard>
+    </ProtectedRoute>
   );
 }
 
