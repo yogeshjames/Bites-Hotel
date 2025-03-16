@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { io } from 'socket.io-client';
+
+const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL); 
 
 const Form = () => {
   const router = useRouter();
@@ -31,7 +34,9 @@ const Form = () => {
       if (response.ok) {
         const result = await response.json();
         localStorage.setItem('hotelId', result.hotelId);
-        
+         //  WebSocket event to join the hotel's specific room
+         socket.emit("joinHotelRoom", result.hotelId);
+         console.log(`Joined WebSocket room: ${result.hotelId}`);
         toast.success(result.message, {
           position: "top-right",
           autoClose: 3000,

@@ -6,6 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle'
 import { RateReview, Comment, } from "@mui/icons-material";
+import { io } from "socket.io-client";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { 
   Box, Tabs, Tab, Typography, Card, CardContent, Button, Grid,
@@ -49,6 +50,8 @@ const HeaderSection = styled(Box)({
   borderRadius: '12px',
   boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
 });
+
+const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL);
 
 const MetricCard = styled(Card)(({ theme }) => ({
   padding: '1.5rem',
@@ -216,31 +219,37 @@ export default function EnterpriseHotelDashboard() {
     fetchHotelDetails();
   }, [hotelId]);
 
-  // Fetch orders (Orders Tab)
   useEffect(() => {
     if (!hotelId) return;
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/hotel/${hotelId}`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          toast.error(errorData.message || "Failed to load orders");
-          return;
-        }
-        const data = await response.json();
-        setOrders(data.orders);
-      } catch (error) {
-        console.error("Orders fetch error:", error);
-        toast.error("Failed to load orders");
-      } finally {
-        setLoadingOrders(false);
-      }
+
+    // Join the hotel room
+    socket.emit("joinHotelRoom", hotelId);
+    console.log(`Joined WebSocket room: ${hotelId}`);
+
+    // Listen for order updates
+    socket.on("orderUpdated", (updatedOrder) => {
+      console.log("Received order update:", updatedOrder);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.orderId === updatedOrder.orderId ? updatedOrder : order
+        )
+      );
+      // toast.info(`Order ${updatedOrder.orderId} updated to ${updatedOrder.status}`);
+    });
+
+    // Listen for new orders
+    socket.on("orderCreated", (newOrder) => {
+      console.log("Received new order:", newOrder);
+      setOrders((prevOrders) => [newOrder, ...prevOrders]);
+      toast.info(`New Order ${newOrder.orderId} created with status ${newOrder.status}`);
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      socket.off("orderUpdated");
+      socket.off("orderCreated");
     };
-    fetchOrders();
-  }, [hotelId]);
+  }, [hotelId, setOrders, socket]);
 
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
