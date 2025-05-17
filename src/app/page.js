@@ -102,10 +102,6 @@ console.log(result);
           />
         </div>
 
-        <div className="flex-row">
-          <span className="span">Forgot password?</span>
-        </div>
-
         <button className="button-submit">Sign In</button>
         <p className="p">
           Don't have an account?{' '}

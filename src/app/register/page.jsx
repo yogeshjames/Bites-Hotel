@@ -91,25 +91,32 @@ const HotelRegistration = () => {
       }
     });
   
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hotel/register`, {
-        method: "POST",
-        body: submissionData,
-      });
-  
-      const data = await response.json();
-      if (response.ok) {
-        toast.success("Hotel registered successfully! 🎉");
-        setFormData({ owner: "", hotelName: "", mobileNumber: "", hotelImage: null, foodItems: [] });
-        router.push("/");
-      } else {
-        toast.error(data.error || "Failed to register hotel");
-      }
-    } catch (error) {
-      console.error("Upload Failed:", error);
-      toast.error("Upload failed try a different format.");
-    } finally {
-      setIsLoading(false);  // Stop loading
+   try {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hotel/register`, {
+    method: "POST",
+    body: submissionData,
+  });
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (jsonError) {
+    // No valid JSON response
+  }
+
+  if (response.ok) {
+    toast.success("Hotel registered successfully! 🎉");
+    setFormData({ owner: "", hotelName: "", mobileNumber: "", hotelImage: null, foodItems: [] });
+    router.push("/");
+  } else {
+    toast.error(data?.error || `Failed to register hotel (Status: ${response.status})`);
+  }
+} catch (error) {
+  console.error("Upload Failed:", error);
+  toast.error("Upload failed, try a different format.");
+} finally {
+  setIsLoading(false);
+
     }
   };
   
@@ -178,7 +185,9 @@ const HotelRegistration = () => {
               />
             </Grid>
           ))}
-
+<Typography color="error" variant="body2" sx={{ mt: 2 }}>
+      Only JPG and PNG formats are allowed
+    </Typography>
           {/* Hotel Image Upload */}
           <Grid item xs={12}>
             <Box sx={{
